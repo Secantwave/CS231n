@@ -98,8 +98,9 @@ class KNearestNeighbor(object):
             # points, and store the result in dists[i, :].                        #
             # Do not use np.linalg.norm().                                        #
             #######################################################################
-            pass
+            dists[i,:] = np.sqrt(np.sum(np.square(self.X_train - X[i]), axis=1))
         return dists
+
 
     def compute_distances_no_loops(self, X):
         """
@@ -124,7 +125,14 @@ class KNearestNeighbor(object):
         # HINT: Try to formulate the l2 distance using matrix multiplication    #
         #       and two broadcast sums.                                         #
         #########################################################################
+        #(a-b)^2 = a^2 + b^2 -2ab
 
+        testp = np.power(X, 2).sum(axis=1, keepdims=True)
+        trainp = np.power(self.X_train, 2).sum(axis=1, keepdims=True).T
+        tt = (X @ self.X_train.T) * -2
+        
+        dists = np.sqrt(testp + trainp + tt)
+        
         return dists
 
     def predict_labels(self, dists, k=1):
@@ -153,8 +161,10 @@ class KNearestNeighbor(object):
             # neighbors. Store these labels in closest_y.                           #
             # Hint: Look up the function numpy.argsort.                             #
             #########################################################################
-
-
+            
+            sort = np.argsort(dists[i])
+            closest_y = self.y_train[sort[range(k)]] 
+            
             #########################################################################
             # TODO:                                                                 #
             # Now that you have found the labels of the k nearest neighbors, you    #
@@ -163,5 +173,6 @@ class KNearestNeighbor(object):
             # label.                                                                #
             #########################################################################
 
-
+            y_pred[i] = np.argmax(np.bincount(closest_y))
+        
         return y_pred
